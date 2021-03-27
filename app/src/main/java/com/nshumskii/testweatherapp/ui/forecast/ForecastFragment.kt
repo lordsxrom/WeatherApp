@@ -33,7 +33,7 @@ class ForecastFragment :
 
     override fun setupObservers() {
         viewModel.forecasts.observe(viewLifecycleOwner, { response ->
-            dailyAdapter.setData(response.daily)
+            dailyAdapter.submitList(response.daily)
         })
     }
 

@@ -2,6 +2,8 @@ package com.nshumskii.testweatherapp.ui.forecast
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.nshumskii.testweatherapp.data.model.onecall.Daily
@@ -9,9 +11,7 @@ import com.nshumskii.testweatherapp.databinding.ItemDailyBinding
 import java.text.SimpleDateFormat
 import java.util.*
 
-class DailyAdapter : RecyclerView.Adapter<DailyAdapter.DailyHolder>() {
-
-    private val days = mutableListOf<Daily>()
+class DailyAdapter : ListAdapter<Daily, DailyAdapter.DailyHolder>(DiffCallback()) {
 
     class DailyHolder(private val itemBinding: ItemDailyBinding) :
         RecyclerView.ViewHolder(itemBinding.root) {
@@ -33,12 +33,6 @@ class DailyAdapter : RecyclerView.Adapter<DailyAdapter.DailyHolder>() {
 
     }
 
-    fun setData(days: List<Daily>) {
-        this.days.clear()
-        this.days.addAll(days)
-        notifyDataSetChanged()
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DailyHolder {
         val itemBinding =
             ItemDailyBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -46,10 +40,16 @@ class DailyAdapter : RecyclerView.Adapter<DailyAdapter.DailyHolder>() {
     }
 
     override fun onBindViewHolder(holder: DailyHolder, position: Int) {
-        val daily = days[position]
+        val daily = getItem(position)
         holder.bind(daily)
     }
 
-    override fun getItemCount(): Int = days.size
+    class DiffCallback : DiffUtil.ItemCallback<Daily>() {
+        override fun areItemsTheSame(oldItem: Daily, newItem: Daily) =
+            oldItem.dt == newItem.dt
+
+        override fun areContentsTheSame(oldItem: Daily, newItem: Daily) =
+            oldItem == newItem
+    }
 
 }
