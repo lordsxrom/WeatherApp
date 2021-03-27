@@ -5,6 +5,7 @@ import com.nshumskii.testweatherapp.data.remote.pojo.OnecallResponse
 
 fun OnecallResponse.toEntity(): OnecallEntity {
     return OnecallEntity(
+        id = "$lat$lon",
         alerts = alerts,
         current = current,
         daily = daily,

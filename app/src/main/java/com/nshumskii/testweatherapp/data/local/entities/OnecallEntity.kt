@@ -7,7 +7,7 @@ import com.nshumskii.testweatherapp.data.model.onecall.*
 
 @Entity
 data class OnecallEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int? = null,
+    @PrimaryKey val id: String,
     val alerts: List<Alert>?,
     @Embedded val current: Current,
     val daily: List<Daily>,

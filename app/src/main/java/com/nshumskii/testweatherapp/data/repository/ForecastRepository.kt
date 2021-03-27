@@ -18,7 +18,7 @@ class ForecastRepository @Inject constructor(
 ) {
 
     suspend fun getOnecallForecast(coord: Coord): Flow<Result<OnecallEntity>> = flow {
-        emit(Result.success(localDataSource.getOnecallForecasts(coord.lat, coord.lon)))
+        emit(Result.success(localDataSource.getOnecallForecast(coord.lat, coord.lon)))
         emit(Result.loading())
         remoteDataSource.getForecast(coord).apply {
             if (status == Result.Status.SUCCESS) {
