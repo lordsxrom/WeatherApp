@@ -2,34 +2,45 @@ package com.nshumskii.testweatherapp.ui.cities
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.nshumskii.testweatherapp.data.local.entities.CurrentWeatherEntity
-import com.nshumskii.testweatherapp.data.model.common.Coord
 import com.nshumskii.testweatherapp.databinding.ItemCityBinding
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
 
 class CitiesAdapter(
-    private val clickListener: (coord: Coord) -> Unit,
-    private val longClickListener: (CurrentWeatherEntity) -> Unit
-) : RecyclerView.Adapter<CitiesAdapter.CityHolder>() {
+    private val listener: OnItemClickListener,
+) : ListAdapter<CurrentWeatherEntity, CitiesAdapter.CityHolder>(DiffCallback()) {
 
-    private val cities = mutableListOf<CurrentWeatherEntity>()
-
-    class CityHolder(private val itemHitBinding: ItemCityBinding) :
+    inner class CityHolder(private val itemHitBinding: ItemCityBinding) :
         RecyclerView.ViewHolder(itemHitBinding.root) {
-        fun bind(
-            weather: CurrentWeatherEntity,
-            listener: (coord: Coord) -> Unit,
-            longClickListener: (CurrentWeatherEntity) -> Unit
-        ) {
-            itemHitBinding.root.setOnClickListener { listener.invoke(weather.coord) }
-            itemHitBinding.root.setOnLongClickListener {
-                longClickListener.invoke(weather)
-                true
+
+        init {
+            itemHitBinding.apply {
+                root.setOnClickListener {
+                    val position = adapterPosition
+                    if (position != RecyclerView.NO_POSITION) {
+                        val task = getItem(position)
+                        listener.onItemClick(task)
+                    }
+                }
+                root.setOnLongClickListener {
+                    val position = adapterPosition
+                    if (position != RecyclerView.NO_POSITION) {
+                        val task = getItem(position)
+                        listener.onItemLongClick(task)
+                        return@setOnLongClickListener true
+                    }
+                    return@setOnLongClickListener false
+                }
             }
+        }
+
+        fun bind(weather: CurrentWeatherEntity) {
             itemHitBinding.cityName.text = weather.name
             itemHitBinding.temperature.text = "${weather.main.temp.roundToInt()} ℃"
             val formatter = SimpleDateFormat("dd/MM/yyyy")
@@ -41,10 +52,9 @@ class CitiesAdapter(
         }
     }
 
-    fun setData(cities: List<CurrentWeatherEntity>) {
-        this.cities.clear()
-        this.cities.addAll(cities)
-        notifyDataSetChanged()
+    interface OnItemClickListener {
+        fun onItemClick(weather: CurrentWeatherEntity)
+        fun onItemLongClick(weather: CurrentWeatherEntity)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CityHolder {
@@ -54,10 +64,16 @@ class CitiesAdapter(
     }
 
     override fun onBindViewHolder(holder: CityHolder, position: Int) {
-        val city = cities[position]
-        holder.bind(city, clickListener, longClickListener)
+        val weather = getItem(position)
+        holder.bind(weather)
     }
 
-    override fun getItemCount(): Int = cities.size
+    class DiffCallback : DiffUtil.ItemCallback<CurrentWeatherEntity>() {
+        override fun areItemsTheSame(oldItem: CurrentWeatherEntity, newItem: CurrentWeatherEntity) =
+            oldItem.id == newItem.id
+
+        override fun areContentsTheSame(oldItem: CurrentWeatherEntity, newItem: CurrentWeatherEntity) =
+            oldItem == newItem
+    }
 
 }

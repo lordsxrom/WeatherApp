@@ -32,18 +32,20 @@ class CitiesFragment :
     override fun setupViews() {
         getLocation()
 
-        val click = { coord: Coord ->
-            findNavController().navigate(
-                R.id.action_citiesFragment_to_forecastFragment,
-                Bundle().apply { putSerializable("coord", coord) }
-            )
+        val onItemClickListener = object : CitiesAdapter.OnItemClickListener {
+            override fun onItemClick(weather: CurrentWeatherEntity) {
+                findNavController().navigate(
+                    R.id.action_citiesFragment_to_forecastFragment,
+                    Bundle().apply { putSerializable("coord", weather.coord) }
+                )
+            }
+
+            override fun onItemLongClick(weather: CurrentWeatherEntity) {
+                viewModel.removeCity(weather)
+            }
         }
 
-        val longClick = { entity: CurrentWeatherEntity ->
-            viewModel.removeCity(entity)
-        }
-
-        citiesAdapter = CitiesAdapter(click, longClick)
+        citiesAdapter = CitiesAdapter(onItemClickListener)
         binding?.citiesRecycler?.adapter = citiesAdapter
     }
 
@@ -84,7 +86,7 @@ class CitiesFragment :
         })
 
         viewModel.citiesWeathers.observe(viewLifecycleOwner, { list ->
-            citiesAdapter.setData(list)
+            citiesAdapter.submitList(list)
         })
     }
 
