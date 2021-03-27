@@ -6,14 +6,19 @@ import android.view.Menu
 import android.view.MenuInflater
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.android.gms.location.LocationServices
+import com.google.android.material.snackbar.Snackbar
 import com.nshumskii.testweatherapp.R
 import com.nshumskii.testweatherapp.data.local.entities.CurrentWeatherEntity
 import com.nshumskii.testweatherapp.databinding.FragmentCitiesBinding
 import com.nshumskii.testweatherapp.utils.base.BaseFragment
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
 import java.io.IOException
 import java.util.*
 import kotlin.math.roundToInt
@@ -39,14 +44,27 @@ class CitiesFragment :
                     Bundle().apply { putSerializable("coord", weather.coord) }
                 )
             }
-
-            override fun onItemLongClick(weather: CurrentWeatherEntity) {
-                viewModel.removeCity(weather)
-            }
         }
 
         citiesAdapter = CitiesAdapter(onItemClickListener)
-        binding?.citiesRecycler?.adapter = citiesAdapter
+        binding?.citiesRecycler?.let { recycler ->
+            recycler.adapter = citiesAdapter
+            ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0,
+                ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+                override fun onMove(
+                    recyclerView: RecyclerView,
+                    viewHolder: RecyclerView.ViewHolder,
+                    target: RecyclerView.ViewHolder
+                ): Boolean {
+                    return false
+                }
+
+                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                    val currentWeather = citiesAdapter.currentList[viewHolder.adapterPosition]
+                    viewModel.removeCity(currentWeather)
+                }
+            }).attachToRecyclerView(recycler)
+        }
     }
 
     override fun setupListeners() {
@@ -70,6 +88,19 @@ class CitiesFragment :
         viewModel.citiesWeathers.observe(viewLifecycleOwner, { list ->
             citiesAdapter.submitList(list)
         })
+
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            viewModel.weathersEvent.collect { event ->
+                when(event) {
+                    is CitiesViewModel.WeathersEvent.ShowUndoDeleteWeatherMessage -> {
+                        Snackbar.make(requireView(), "Task deleted", Snackbar.LENGTH_LONG)
+                            .setAction("UNDO") {
+                                viewModel.onUndoDeleteClick(event.weather)
+                            }.show()
+                    }
+                }
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

@@ -57,4 +57,6 @@ class WeatherRepository @Inject constructor(
         emit(Result.success(null))
     }
 
+    suspend fun undoDeleteCity(entity: CurrentWeatherEntity) = localDataSource.insert(entity)
+
 }

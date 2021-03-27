@@ -28,15 +28,6 @@ class CitiesAdapter(
                         listener.onItemClick(task)
                     }
                 }
-                root.setOnLongClickListener {
-                    val position = adapterPosition
-                    if (position != RecyclerView.NO_POSITION) {
-                        val task = getItem(position)
-                        listener.onItemLongClick(task)
-                        return@setOnLongClickListener true
-                    }
-                    return@setOnLongClickListener false
-                }
             }
         }
 
@@ -54,7 +45,6 @@ class CitiesAdapter(
 
     interface OnItemClickListener {
         fun onItemClick(weather: CurrentWeatherEntity)
-        fun onItemLongClick(weather: CurrentWeatherEntity)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CityHolder {

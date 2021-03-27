@@ -10,7 +10,9 @@ import com.nshumskii.testweatherapp.utils.Event
 import com.nshumskii.testweatherapp.utils.Result
 import com.nshumskii.testweatherapp.utils.base.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -24,6 +26,9 @@ class CitiesViewModel @Inject constructor(
 
     private val _citiesWeathers: MutableLiveData<List<CurrentWeatherEntity>> = MutableLiveData()
     val citiesWeathers: LiveData<List<CurrentWeatherEntity>> get() = _citiesWeathers
+
+    private val weathersEventChannel = Channel<WeathersEvent>()
+    val weathersEvent = weathersEventChannel.receiveAsFlow()
 
     init {
         getCitiesList()
@@ -95,6 +100,7 @@ class CitiesViewModel @Inject constructor(
                 when (result.status) {
                     Result.Status.SUCCESS -> {
                         progress.value = Event(false)
+                        weathersEventChannel.send(WeathersEvent.ShowUndoDeleteWeatherMessage(entity))
                     }
                     Result.Status.LOADING -> {
                         progress.value = Event(true)
@@ -102,6 +108,14 @@ class CitiesViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun onUndoDeleteClick(entity: CurrentWeatherEntity) = viewModelScope.launch {
+        weatherRepository.undoDeleteCity(entity)
+    }
+
+    sealed class WeathersEvent {
+        data class ShowUndoDeleteWeatherMessage(val weather: CurrentWeatherEntity) : WeathersEvent()
     }
 
 }
