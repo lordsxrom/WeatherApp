@@ -7,14 +7,14 @@ import com.nshumskii.testweatherapp.utils.Result
 import com.nshumskii.testweatherapp.utils.base.BaseDataSource
 import javax.inject.Inject
 
-class WeatherRemoteDataSource @Inject constructor(
+class OpenWeatherDataSource @Inject constructor(
     private val openWeatherService: OpenWeatherService
 ) : BaseDataSource() {
 
     suspend fun getCurrentWeather(cityName: String): Result<CurrentWeatherResponse> =
         getResult { openWeatherService.getCurrentWeather(cityName) }
 
-    suspend fun getForecast(coord: Coord): Result<OnecallResponse> =
-        getResult { openWeatherService.getForecast(coord.lat, coord.lon) }
+    suspend fun getOnecall(coord: Coord): Result<OnecallResponse> =
+        getResult { openWeatherService.getOnecall(coord.lat, coord.lon) }
 
 }

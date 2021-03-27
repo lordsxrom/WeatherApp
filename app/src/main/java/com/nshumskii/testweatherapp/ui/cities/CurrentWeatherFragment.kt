@@ -15,7 +15,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.material.snackbar.Snackbar
 import com.nshumskii.testweatherapp.R
 import com.nshumskii.testweatherapp.data.local.entities.CurrentWeatherEntity
-import com.nshumskii.testweatherapp.databinding.FragmentCitiesBinding
+import com.nshumskii.testweatherapp.databinding.FragmentCurrentWeatherBinding
 import com.nshumskii.testweatherapp.utils.base.BaseFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
@@ -24,12 +24,13 @@ import java.util.*
 import kotlin.math.roundToInt
 
 @AndroidEntryPoint
-class CitiesFragment :
-    BaseFragment<CitiesViewModel, FragmentCitiesBinding>(R.layout.fragment_cities) {
+class CurrentWeatherFragment :
+    BaseFragment<CurrentWeatherViewModel, FragmentCurrentWeatherBinding>(R.layout.fragment_current_weather) {
 
-    override val viewModel: CitiesViewModel by viewModels()
+    override val viewModel: CurrentWeatherViewModel by viewModels()
 
-    override fun createBinding(): FragmentCitiesBinding = FragmentCitiesBinding.bind(requireView())
+    override fun createBinding(): FragmentCurrentWeatherBinding =
+        FragmentCurrentWeatherBinding.bind(requireView())
 
     lateinit var citiesAdapter: CitiesAdapter
 
@@ -49,8 +50,10 @@ class CitiesFragment :
         citiesAdapter = CitiesAdapter(onItemClickListener)
         binding?.citiesRecycler?.let { recycler ->
             recycler.adapter = citiesAdapter
-            ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(0,
-                ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+            ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
+                0,
+                ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+            ) {
                 override fun onMove(
                     recyclerView: RecyclerView,
                     viewHolder: RecyclerView.ViewHolder,
@@ -61,7 +64,7 @@ class CitiesFragment :
 
                 override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                     val currentWeather = citiesAdapter.currentList[viewHolder.adapterPosition]
-                    viewModel.removeCity(currentWeather)
+                    viewModel.onDelete(currentWeather)
                 }
             }).attachToRecyclerView(recycler)
         }
@@ -91,11 +94,11 @@ class CitiesFragment :
 
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.weathersEvent.collect { event ->
-                when(event) {
-                    is CitiesViewModel.WeathersEvent.ShowUndoDeleteWeatherMessage -> {
+                when (event) {
+                    is CurrentWeatherViewModel.WeathersEvent.ShowUndoDeleteWeatherMessage -> {
                         Snackbar.make(requireView(), "Task deleted", Snackbar.LENGTH_LONG)
                             .setAction("UNDO") {
-                                viewModel.onUndoDeleteClick(event.weather)
+                                viewModel.onUndoDelete(event.weather)
                             }.show()
                     }
                 }
@@ -109,11 +112,11 @@ class CitiesFragment :
         val searchItem = menu.findItem(R.id.action_search)
         val searchView = searchItem.actionView as SearchView
 
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 query?.let { text ->
                     if (text.isNotEmpty()) {
-                        viewModel.addCity(text)
+                        viewModel.findCurrentWeather(text)
                         return true
                     }
                 }

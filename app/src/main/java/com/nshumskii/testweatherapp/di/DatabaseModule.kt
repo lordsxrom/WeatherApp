@@ -3,8 +3,8 @@ package com.nshumskii.testweatherapp.di
 import android.content.Context
 import androidx.room.Room
 import com.nshumskii.testweatherapp.data.local.AppDatabase
-import com.nshumskii.testweatherapp.data.local.ForecastDao
-import com.nshumskii.testweatherapp.data.local.WeatherDao
+import com.nshumskii.testweatherapp.data.local.OnecallDao
+import com.nshumskii.testweatherapp.data.local.CurrentWeatherDao
 
 import dagger.Module
 import dagger.Provides
@@ -29,13 +29,13 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideWeatherDao(appDatabase: AppDatabase): WeatherDao {
+    fun provideWeatherDao(appDatabase: AppDatabase): CurrentWeatherDao {
         return appDatabase.weatherDao()
     }
 
     @Provides
     @Singleton
-    fun provideForecastDao(appDatabase: AppDatabase): ForecastDao {
+    fun provideForecastDao(appDatabase: AppDatabase): OnecallDao {
         return appDatabase.forecastDao()
     }
 

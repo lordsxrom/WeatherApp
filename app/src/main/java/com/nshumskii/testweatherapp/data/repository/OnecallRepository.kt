@@ -1,10 +1,10 @@
 package com.nshumskii.testweatherapp.data.repository
 
 import com.nshumskii.testweatherapp.data.adapters.toEntity
-import com.nshumskii.testweatherapp.data.local.ForecastDao
+import com.nshumskii.testweatherapp.data.local.OnecallDao
 import com.nshumskii.testweatherapp.data.local.entities.OnecallEntity
 import com.nshumskii.testweatherapp.data.model.common.Coord
-import com.nshumskii.testweatherapp.data.remote.WeatherRemoteDataSource
+import com.nshumskii.testweatherapp.data.remote.OpenWeatherDataSource
 import com.nshumskii.testweatherapp.utils.Result
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -12,15 +12,15 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
-class ForecastRepository @Inject constructor(
-    private val remoteDataSource: WeatherRemoteDataSource,
-    private val localDataSource: ForecastDao
+class OnecallRepository @Inject constructor(
+    private val remoteDataSource: OpenWeatherDataSource,
+    private val localDataSource: OnecallDao
 ) {
 
-    suspend fun getOnecallForecast(coord: Coord): Flow<Result<OnecallEntity>> = flow {
-        emit(Result.success(localDataSource.getOnecallForecast(coord.lat, coord.lon)))
+    suspend fun getOnecall(coord: Coord): Flow<Result<OnecallEntity>> = flow {
+        emit(Result.success(localDataSource.get(coord.lat, coord.lon)))
         emit(Result.loading())
-        remoteDataSource.getForecast(coord).apply {
+        remoteDataSource.getOnecall(coord).apply {
             if (status == Result.Status.SUCCESS) {
                 data?.let { data ->
                     val entity = data.toEntity()

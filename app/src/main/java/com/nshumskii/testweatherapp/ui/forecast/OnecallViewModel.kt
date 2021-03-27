@@ -5,8 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.nshumskii.testweatherapp.data.local.entities.OnecallEntity
 import com.nshumskii.testweatherapp.data.model.common.Coord
-import com.nshumskii.testweatherapp.data.remote.pojo.OnecallResponse
-import com.nshumskii.testweatherapp.data.repository.ForecastRepository
+import com.nshumskii.testweatherapp.data.repository.OnecallRepository
 import com.nshumskii.testweatherapp.utils.Event
 import com.nshumskii.testweatherapp.utils.Result
 import com.nshumskii.testweatherapp.utils.base.BaseViewModel
@@ -16,20 +15,20 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ForecastViewModel @Inject constructor(
-    private val forecastRepository: ForecastRepository
+class OnecallViewModel @Inject constructor(
+    private val onecallRepository: OnecallRepository
 ) : BaseViewModel() {
 
-    private val _forecasts: MutableLiveData<OnecallEntity> = MutableLiveData()
-    val forecasts: LiveData<OnecallEntity> get() = _forecasts
+    private val _onecall: MutableLiveData<OnecallEntity> = MutableLiveData()
+    val onecall: LiveData<OnecallEntity> get() = _onecall
 
-    fun getForecast(coord: Coord) {
+    fun getOnecall(coord: Coord) {
         viewModelScope.launch {
-            forecastRepository.getOnecallForecast(coord).collect { result ->
+            onecallRepository.getOnecall(coord).collect { result ->
                 when (result.status) {
                     Result.Status.SUCCESS -> {
                         progress.value = Event(false)
-                        result.data?.let { _forecasts.value = it }
+                        result.data?.let { _onecall.value = it }
                     }
                     Result.Status.ERROR -> {
                         progress.value = Event(false)

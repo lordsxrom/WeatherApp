@@ -7,9 +7,9 @@
 
     <fragment
         android:id="@+id/citiesFragment"
-        android:name="com.nshumskii.testweatherapp.ui.cities.CitiesFragment"
+        android:name="com.nshumskii.testweatherapp.ui.cities.CurrentWeatherFragment"
         android:label="CitiesFragment"
-        tools:layout="@layout/fragment_cities">
+        tools:layout="@layout/fragment_current_weather">
         <action
             android:id="@+id/action_citiesFragment_to_forecastFragment"
             app:destination="@id/forecastFragment" />
@@ -17,8 +17,8 @@
 
     <fragment
         android:id="@+id/forecastFragment"
-        android:name="com.nshumskii.testweatherapp.ui.forecast.ForecastFragment"
+        android:name="com.nshumskii.testweatherapp.ui.forecast.OnecallFragment"
         android:label="ForecastFragment"
-        tools:layout="@layout/fragment_forecast" />
+        tools:layout="@layout/fragment_onecall" />
 
 </navigation>

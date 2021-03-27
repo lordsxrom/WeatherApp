@@ -10,8 +10,8 @@ import com.nshumskii.testweatherapp.data.local.entities.OnecallEntity
 @TypeConverters(DataConverter::class)
 abstract class AppDatabase : RoomDatabase() {
 
-    abstract fun weatherDao(): WeatherDao
+    abstract fun weatherDao(): CurrentWeatherDao
 
-    abstract fun forecastDao(): ForecastDao
+    abstract fun forecastDao(): OnecallDao
 
 }

@@ -1,24 +1,23 @@
 package com.nshumskii.testweatherapp.data.repository
 
 import com.nshumskii.testweatherapp.data.adapters.toEntity
-import com.nshumskii.testweatherapp.data.local.WeatherDao
+import com.nshumskii.testweatherapp.data.local.CurrentWeatherDao
 import com.nshumskii.testweatherapp.data.local.entities.CurrentWeatherEntity
-import com.nshumskii.testweatherapp.data.remote.WeatherRemoteDataSource
+import com.nshumskii.testweatherapp.data.remote.OpenWeatherDataSource
 import com.nshumskii.testweatherapp.utils.Result
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 
 import javax.inject.Inject
 
-class WeatherRepository @Inject constructor(
-    private val remoteDataSource: WeatherRemoteDataSource,
-    private val localDataSource: WeatherDao
+class CurrentWeatherRepository @Inject constructor(
+    private val remoteDataSource: OpenWeatherDataSource,
+    private val localDataSource: CurrentWeatherDao
 ) {
 
     suspend fun getCurrentWeather(cityName: String): Flow<Result<CurrentWeatherEntity>> = flow {
+        emit(Result.success(localDataSource.get(cityName)))
         emit(Result.loading())
-        emit(Result.success(localDataSource.getCurrentWeather(cityName)))
-
         remoteDataSource.getCurrentWeather(cityName).apply {
             if (status == Result.Status.SUCCESS) {
                 data?.let { data ->
@@ -32,14 +31,14 @@ class WeatherRepository @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
-    suspend fun getCitiesList(): Flow<Result<List<CurrentWeatherEntity>>> = flow {
+    suspend fun getCurrentWeathers(): Flow<Result<List<CurrentWeatherEntity>>> = flow {
         emit(Result.loading())
-        emitAll(localDataSource.getAllCurrentWeather().map { entity ->
+        emitAll(localDataSource.getAll().map { entity ->
             Result.success(entity)
         })
     }.flowOn(Dispatchers.IO)
 
-    suspend fun addCity(cityName: String): Flow<Result<Nothing?>> = flow {
+    suspend fun findCurrentWeather(cityName: String): Flow<Result<Nothing?>> = flow {
         emit(Result.loading())
         val responseStatus = remoteDataSource.getCurrentWeather(cityName)
         if (responseStatus.status == Result.Status.SUCCESS) {
@@ -51,12 +50,10 @@ class WeatherRepository @Inject constructor(
         }
     }
 
-    suspend fun removeCity(entity: CurrentWeatherEntity): Flow<Result<Nothing?>> = flow {
-        emit(Result.loading())
+    suspend fun deleteCurrentWeather(entity: CurrentWeatherEntity) =
         localDataSource.delete(entity)
-        emit(Result.success(null))
-    }
 
-    suspend fun undoDeleteCity(entity: CurrentWeatherEntity) = localDataSource.insert(entity)
+    suspend fun undoDeleteCurrentWeather(entity: CurrentWeatherEntity) =
+        localDataSource.insert(entity)
 
 }

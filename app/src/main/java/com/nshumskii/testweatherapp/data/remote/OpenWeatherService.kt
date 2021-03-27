@@ -12,6 +12,6 @@ interface OpenWeatherService {
     suspend fun getCurrentWeather(@Query("q") cityName: String): Response<CurrentWeatherResponse>
 
     @GET("/data/2.5/onecall")
-    suspend fun getForecast(@Query("lat") lat: Double, @Query("lon") lon: Double): Response<OnecallResponse>
+    suspend fun getOnecall(@Query("lat") lat: Double, @Query("lon") lon: Double): Response<OnecallResponse>
 
 }

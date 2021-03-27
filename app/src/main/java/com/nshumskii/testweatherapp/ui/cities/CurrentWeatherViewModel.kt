@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.nshumskii.testweatherapp.data.local.entities.CurrentWeatherEntity
-import com.nshumskii.testweatherapp.data.repository.WeatherRepository
+import com.nshumskii.testweatherapp.data.repository.CurrentWeatherRepository
 import com.nshumskii.testweatherapp.utils.Event
 import com.nshumskii.testweatherapp.utils.Result
 import com.nshumskii.testweatherapp.utils.base.BaseViewModel
@@ -17,8 +17,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class CitiesViewModel @Inject constructor(
-    private val weatherRepository: WeatherRepository
+class CurrentWeatherViewModel @Inject constructor(
+    private val currentWeatherRepository: CurrentWeatherRepository
 ) : BaseViewModel() {
 
     private val _currentWeather: MutableLiveData<CurrentWeatherEntity> = MutableLiveData()
@@ -31,12 +31,12 @@ class CitiesViewModel @Inject constructor(
     val weathersEvent = weathersEventChannel.receiveAsFlow()
 
     init {
-        getCitiesList()
+        getCurrentWeathers()
     }
 
     fun getCurrentWeather(cityName: String) {
         viewModelScope.launch {
-            weatherRepository.getCurrentWeather(cityName).collect { result ->
+            currentWeatherRepository.getCurrentWeather(cityName).collect { result ->
                 when (result.status) {
                     Result.Status.SUCCESS -> {
                         progress.value = Event(false)
@@ -54,9 +54,9 @@ class CitiesViewModel @Inject constructor(
         }
     }
 
-    fun getCitiesList() {
+    fun getCurrentWeathers() {
         viewModelScope.launch {
-            weatherRepository.getCitiesList().collect { result ->
+            currentWeatherRepository.getCurrentWeathers().collect { result ->
                 when (result.status) {
                     Result.Status.SUCCESS -> {
                         progress.value = Event(false)
@@ -74,10 +74,10 @@ class CitiesViewModel @Inject constructor(
         }
     }
 
-    fun addCity(cityName: String) {
+    fun findCurrentWeather(cityName: String) {
         Log.d("CitiesViewModel", "addCity: $cityName")
         viewModelScope.launch {
-            weatherRepository.addCity(cityName).collect { result ->
+            currentWeatherRepository.findCurrentWeather(cityName).collect { result ->
                 when (result.status) {
                     Result.Status.SUCCESS -> {
                         progress.value = Event(false)
@@ -94,24 +94,13 @@ class CitiesViewModel @Inject constructor(
         }
     }
 
-    fun removeCity(entity: CurrentWeatherEntity) {
-        viewModelScope.launch {
-            weatherRepository.removeCity(entity).collect { result ->
-                when (result.status) {
-                    Result.Status.SUCCESS -> {
-                        progress.value = Event(false)
-                        weathersEventChannel.send(WeathersEvent.ShowUndoDeleteWeatherMessage(entity))
-                    }
-                    Result.Status.LOADING -> {
-                        progress.value = Event(true)
-                    }
-                }
-            }
-        }
+    fun onDelete(entity: CurrentWeatherEntity) = viewModelScope.launch {
+        currentWeatherRepository.deleteCurrentWeather(entity)
+        weathersEventChannel.send(WeathersEvent.ShowUndoDeleteWeatherMessage(entity))
     }
 
-    fun onUndoDeleteClick(entity: CurrentWeatherEntity) = viewModelScope.launch {
-        weatherRepository.undoDeleteCity(entity)
+    fun onUndoDelete(entity: CurrentWeatherEntity) = viewModelScope.launch {
+        currentWeatherRepository.undoDeleteCurrentWeather(entity)
     }
 
     sealed class WeathersEvent {
