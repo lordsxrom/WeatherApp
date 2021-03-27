@@ -2,16 +2,15 @@ package com.nshumskii.testweatherapp.ui.cities
 
 import android.location.Geocoder
 import android.os.Bundle
-import android.text.InputType
-import android.widget.EditText
-import androidx.appcompat.app.AlertDialog
+import android.view.Menu
+import android.view.MenuInflater
+import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.bumptech.glide.Glide
 import com.google.android.gms.location.LocationServices
 import com.nshumskii.testweatherapp.R
 import com.nshumskii.testweatherapp.data.local.entities.CurrentWeatherEntity
-import com.nshumskii.testweatherapp.data.model.common.Coord
 import com.nshumskii.testweatherapp.databinding.FragmentCitiesBinding
 import com.nshumskii.testweatherapp.utils.base.BaseFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -30,6 +29,7 @@ class CitiesFragment :
     lateinit var citiesAdapter: CitiesAdapter
 
     override fun setupViews() {
+        setHasOptionsMenu(true)
         getLocation()
 
         val onItemClickListener = object : CitiesAdapter.OnItemClickListener {
@@ -50,25 +50,7 @@ class CitiesFragment :
     }
 
     override fun setupListeners() {
-        binding?.addButton?.setOnClickListener {
-            context?.let { context ->
-                val builder = AlertDialog.Builder(context)
-                builder.setTitle("Title")
 
-                val input = EditText(context)
-                input.inputType = InputType.TYPE_CLASS_TEXT
-                builder.setView(input)
-
-                builder.setPositiveButton("OK") { dialog, which ->
-                    viewModel.addCity(input.text.toString())
-                }
-                builder.setNegativeButton("Cancel") { dialog, which ->
-                    dialog.cancel()
-                }
-
-                builder.show()
-            }
-        }
     }
 
     override fun setupObservers() {
@@ -87,6 +69,29 @@ class CitiesFragment :
 
         viewModel.citiesWeathers.observe(viewLifecycleOwner, { list ->
             citiesAdapter.submitList(list)
+        })
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu_fragment_cities, menu)
+
+        val searchItem = menu.findItem(R.id.action_search)
+        val searchView = searchItem.actionView as SearchView
+
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener{
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                query?.let { text ->
+                    if (text.isNotEmpty()) {
+                        viewModel.addCity(text)
+                        return true
+                    }
+                }
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                return false
+            }
         })
     }
 
