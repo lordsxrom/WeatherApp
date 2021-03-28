@@ -1,5 +1,8 @@
 package com.nshumskii.testweatherapp.ui.forecast
 
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import androidx.fragment.app.viewModels
 import com.nshumskii.testweatherapp.R
 import com.nshumskii.testweatherapp.data.local.entities.CurrentWeatherEntity
@@ -19,6 +22,8 @@ class OnecallFragment :
     lateinit var dailyAdapter: DailyAdapter
 
     override fun setupViews() {
+        setHasOptionsMenu(true)
+
         arguments?.getParcelable<CurrentWeatherEntity>("weather")?.let { weather ->
             viewModel.getOnecall(weather.coord)
         }
@@ -32,9 +37,29 @@ class OnecallFragment :
     }
 
     override fun setupObservers() {
-        viewModel.onecall.observe(viewLifecycleOwner, { response ->
-            dailyAdapter.submitList(response.daily)
+        viewModel.forecast.observe(viewLifecycleOwner, { list ->
+            dailyAdapter.submitList(list)
         })
     }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu_fragment_onecall, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_show_daily -> {
+                viewModel.onForecastTypeSelected(ForecastType.TYPE_DAILY)
+                true
+            }
+            R.id.action_show_hourly -> {
+                viewModel.onForecastTypeSelected(ForecastType.TYPE_HOURLY)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+
+    }
+
 
 }

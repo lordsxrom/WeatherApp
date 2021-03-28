@@ -19,8 +19,12 @@ class OnecallViewModel @Inject constructor(
     private val onecallRepository: OnecallRepository
 ) : BaseViewModel() {
 
-    private val _onecall: MutableLiveData<OnecallEntity> = MutableLiveData()
-    val onecall: LiveData<OnecallEntity> get() = _onecall
+    private val _forecast: MutableLiveData<List<Any>> = MutableLiveData()
+    val forecast: LiveData<List<Any>> get() = _forecast
+
+    var forecastType = ForecastType.TYPE_DAILY
+
+    var entity: OnecallEntity? = null
 
     fun getOnecall(coord: Coord) {
         viewModelScope.launch {
@@ -28,7 +32,13 @@ class OnecallViewModel @Inject constructor(
                 when (result.status) {
                     Result.Status.SUCCESS -> {
                         progress.value = Event(false)
-                        result.data?.let { _onecall.value = it }
+                        result.data?.let { entity ->
+                            this@OnecallViewModel.entity = entity
+                            when(forecastType){
+                                ForecastType.TYPE_DAILY -> _forecast.value = entity.daily
+                                ForecastType.TYPE_HOURLY -> _forecast.value = entity.hourly
+                            }
+                        }
                     }
                     Result.Status.ERROR -> {
                         progress.value = Event(false)
@@ -42,4 +52,14 @@ class OnecallViewModel @Inject constructor(
         }
     }
 
+    fun onForecastTypeSelected(type: ForecastType) {
+        forecastType = type
+        when(forecastType){
+            ForecastType.TYPE_DAILY -> _forecast.value = entity?.daily
+            ForecastType.TYPE_HOURLY -> _forecast.value = entity?.hourly
+        }
+    }
+
 }
+
+enum class ForecastType { TYPE_DAILY, TYPE_HOURLY }
