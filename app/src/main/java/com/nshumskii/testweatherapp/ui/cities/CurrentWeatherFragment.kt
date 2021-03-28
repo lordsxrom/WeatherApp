@@ -42,7 +42,7 @@ class CurrentWeatherFragment :
             override fun onItemClick(weather: CurrentWeatherEntity) {
                 findNavController().navigate(
                     R.id.action_citiesFragment_to_forecastFragment,
-                    Bundle().apply { putSerializable("coord", weather.coord) }
+                    Bundle().apply { putParcelable("weather", weather) }
                 )
             }
         }

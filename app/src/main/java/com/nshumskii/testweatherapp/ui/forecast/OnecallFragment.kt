@@ -2,7 +2,7 @@ package com.nshumskii.testweatherapp.ui.forecast
 
 import androidx.fragment.app.viewModels
 import com.nshumskii.testweatherapp.R
-import com.nshumskii.testweatherapp.data.model.common.Coord
+import com.nshumskii.testweatherapp.data.local.entities.CurrentWeatherEntity
 import com.nshumskii.testweatherapp.databinding.FragmentOnecallBinding
 import com.nshumskii.testweatherapp.utils.base.BaseFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -19,8 +19,8 @@ class OnecallFragment :
     lateinit var dailyAdapter: DailyAdapter
 
     override fun setupViews() {
-        arguments?.getSerializable("coord")?.let { coord ->
-            viewModel.getOnecall(coord as Coord)
+        arguments?.getParcelable<CurrentWeatherEntity>("weather")?.let { weather ->
+            viewModel.getOnecall(weather.coord)
         }
 
         dailyAdapter = DailyAdapter()
